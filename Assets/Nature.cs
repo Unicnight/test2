@@ -71,6 +71,8 @@ public class Nature : MonoBehaviour {
                 //Rigidbody_1.AddForce(f / distance / distance * k);
                 //Rigidbody_2.AddForce(-f / distance / distance * k);
                 //Rigidbody_1.gravityScale = 1f - n / distance / distance;
+
+                AreaEffector2D a = new AreaEffector2D();
             } else {
 				force = (Rigidbody_2.position - Rigidbody_1.position).normalized / distance / distance * k;
 				Rigidbody_1.AddForce ((Rigidbody_2.position - Rigidbody_1.position).normalized / distance / distance * k);

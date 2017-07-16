@@ -90,9 +90,8 @@ public abstract class Magnetic_Object
     private delegate int Effects_Handler();//定义委托
     private Effects_Handler effects;
 
-    public Magnetic_Object(ref GameObject game_object,Effective_Range effective_range, int state = 1)
+    public Magnetic_Object(Effective_Range effective_range, int state = 1)
     {
-        this.game_object = game_object;
         try
         {
             this.rigidbody = this.game_object.GetComponent<Rigidbody2D>();
@@ -124,11 +123,19 @@ public abstract class Magnetic_Object
         return -1;
     }
     protected abstract bool magnetic_effect(Magnetic_Object magnetic_object);
-
-    public int Processing()
+    
+    public int Processing(GameObject game_object)
     {
         try
         {
+            try
+            {
+                this.rigidbody = game_object.GetComponent<Rigidbody2D>();
+            }
+            catch
+            {
+                return 2;
+            }
             effects();
         }catch
         {
@@ -150,6 +157,7 @@ public abstract class Magnetic_Object
             return false;
         }
     }
+    
 
 }
 public class Magnetic_Sector : Magnetic_Object
@@ -188,8 +196,9 @@ public class Magnetic_Sector : Magnetic_Object
         public float precision { set; get; }
         public float resolation { set; get; }
         public bool minor_arc { set; get; }
+        public bool sync { set; get; }
 
-        public Sector_Effective_Range(ref Vector2 centre, Vector2 start_edge, Vector2 end_edge, float min_radius = 0f, float max_radius = 1f, float magnitude = 1f, float precision = 0.3927f, bool minor_arc = true)
+        public Sector_Effective_Range(Vector2 centre, Vector2 start_edge, Vector2 end_edge, float min_radius = 0f, float max_radius = 1f, float magnitude = 1f, float precision = 0.3927f, bool minor_arc = true,bool sync=false)
         {
             this.centre = centre;
             this.start_edge = start_edge;
@@ -205,6 +214,13 @@ public class Magnetic_Sector : Magnetic_Object
                 this.minor_arc = false;
             }
             else this.minor_arc = minor_arc;
+            this.sync = sync;
+        }
+        public Vector2 sync_centre(Vector2 centre)
+        {
+            if(this.sync)
+                this.centre = centre;
+            return this.centre;
         }
     }
 
@@ -214,11 +230,12 @@ public class Magnetic_Sector : Magnetic_Object
         get { return this.effective_range; }
     }
 
-    public Magnetic_Sector(ref GameObject game_object, Sector_Effective_Range sector_effective_range, int state = 1) : base(ref game_object, sector_effective_range, state)
+    public Magnetic_Sector(Sector_Effective_Range sector_effective_range, int state = 1) : base(sector_effective_range, state)
     {
     }
     protected override bool magnetic_effect(Magnetic_Object magnetic_object)
     {
+        this.effective_range.sync_centre(this.rigidbody.position);
         float distance = Vector2.Distance(this.effective_range.centre, magnetic_object.rigidbody.position);
         Vector2 direction = (magnetic_object.rigidbody.position - this.effective_range.centre).normalized * this.pole * magnetic_object.pole;
         float angle = Vector2.Angle(direction, new Vector2(0, 1));
@@ -240,5 +257,6 @@ public class Magnetic_Sector : Magnetic_Object
         direction = new Vector2(sign * Mathf.Sin(Mathf.Round(angle * this.effective_range.precision) * this.effective_range.precision), Mathf.Cos(Mathf.Round(angle * this.effective_range.precision) * this.effective_range.precision)).normalized;
         this.force += this.effective_range.k * (1 - distance * distance / this.effective_range.max_radius / this.effective_range.max_radius) * direction;
         return true;
+        MonoBehaviour.print(direction.ToString());
     }
 }

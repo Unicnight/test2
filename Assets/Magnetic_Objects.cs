@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 
 [System.Serializable]
@@ -69,14 +69,16 @@ public abstract class Magnetic_Object
     }
     public abstract class Effective_Range { }
 
-    private Magnetic_Object[] _magnetic_objects;
+
     private int _magnet_num;
     private Vector2 _force;
     private Pole _pole;
     private GameObject _game_object;
     private Rigidbody2D _rigidbody;
+    private bool _effects_actived = false;
+    private bool _is_effective;
     protected Effective_Range _effective_range;
-
+    
     public Vector2 force
     {
         set { this._force = value; }
@@ -102,33 +104,51 @@ public abstract class Magnetic_Object
         private set { this._effective_range = value; }
         get { return this._effective_range; }
     }
-
-    private delegate int Effects_Handler();//定义委托
-    private Effects_Handler effects;
-
-    public Magnetic_Object(Effective_Range effective_range, int state = 1)
+    public bool effects_actived
     {
-        try
+        set
         {
-            this.rigidbody = this.game_object.GetComponent<Rigidbody2D>();
+            if (value) this.effects_delegate += calculate_effects;
+            else this.effects_delegate -= calculate_effects;
+            this.effects_actived = value;
         }
-        catch
+        get { return this._effects_actived; }
+    }
+    public bool is_effective
+    {
+        set {
+            if (value) this.effective_delegate += magnetic_effect;
+            else this.effective_delegate -= magnetic_effect;
+            this._is_effective = value; }
+        get { return this.is_effective; }
+    }
+    public List<Magnetic_Object> magnetic_objects { private set; get; }
+    public int magnet_num
+    {
+        private set
         {
+            if (value > 0) this.effects_actived = true;
+            else this.effects_actived = false;
+            this._magnet_num = value;
+        }
+        get { return this._magnet_num; }
+    }
 
-        } 
-        this.effective_range = effective_range;
-        this.pole = new Pole(state);
-        //MonoBehaviour.print("inited");
-    }    
-    protected int calculate_effects()
+    private delegate int Effects_Delegate();//定义委托
+    private delegate bool Effective_Delegate(Magnetic_Object magnetic_object);//定义委托
+    private Effects_Delegate effects_delegate;
+    private Effective_Delegate effective_delegate;
+
+   
+    private int calculate_effects()
     {
         int n = 0;
         this.force = Vector2.zero;
-        while (n < this._magnet_num)
+        while (n < this.magnet_num)
         {
             try
             {
-                this._magnetic_objects[n].magnetic_effect(this);
+                this.magnetic_objects[n].effection(this);
             }
             catch
             {
@@ -139,8 +159,32 @@ public abstract class Magnetic_Object
         //this.rigidbody.AddForce(this.force);
         return -1;
     }
+    private int effection(Magnetic_Object magnetic_object)
+    {
+        effective_delegate(magnetic_object);
+        return -1;
+    }
+
+
     protected abstract bool magnetic_effect(Magnetic_Object magnetic_object);
-    
+
+
+    public Magnetic_Object(Effective_Range effective_range, int state = 1,bool is_effective=true)
+    {
+        try
+        {
+            this.rigidbody = this.game_object.GetComponent<Rigidbody2D>();
+        }
+        catch
+        {
+
+        }
+        this.magnetic_objects = new List<Magnetic_Object>();
+        this.effective_range = effective_range;
+        this.pole = new Pole(state);
+        this.is_effective = is_effective;
+        //MonoBehaviour.print("inited");
+    }
     public int Processing(GameObject game_object)
     {
         try
@@ -153,20 +197,19 @@ public abstract class Magnetic_Object
             {
                 return 2;
             }
-            effects();
+            effects_delegate();
         }catch
         {
             return 1;
         }
         return -1;
     }
-    public bool add_magnetic_objects(Magnetic_Object[] magnetic_objects)
+    public bool add_magnetic_objects(List<Magnetic_Object> magnetic_objects)
     {
         try
         {
-            this._magnetic_objects = magnetic_objects;
-            this._magnet_num = this._magnetic_objects.Length;
-            if (this._magnet_num > 0) effects += calculate_effects;
+            this.magnetic_objects.AddRange(magnetic_objects);
+            this.magnet_num = this.magnetic_objects.Count;
         }
         catch
         {
@@ -175,7 +218,49 @@ public abstract class Magnetic_Object
         //MonoBehaviour.print("added");
         return true;
     }
-    
+    public bool add_magnetic_object(Magnetic_Object magnetic_object)
+    {
+        try
+        {
+            this.magnetic_objects.Add(magnetic_object);
+            this.magnet_num = this.magnetic_objects.Count;
+        }
+        catch
+        {
+            return false;
+        }
+        //MonoBehaviour.print("added");
+        return true;
+    }
+    public bool remove_magnetic_object_at(int index)
+    {
+        try
+        {
+            this.magnetic_objects.RemoveAt(index);
+            this.magnet_num = this.magnetic_objects.Count;
+        }
+        catch
+        {
+            return false;
+        }
+        //MonoBehaviour.print("added");
+        return true;
+    }
+    public bool remove_magnetic_object(Magnetic_Object magnetic_object)
+    {
+        try
+        {
+            this.magnetic_objects.Remove(magnetic_object);
+            this.magnet_num = this.magnetic_objects.Count;
+        }
+        catch
+        {
+            return false;
+        }
+        //MonoBehaviour.print("added");
+        return true;
+    }
+
 
 }
 public class Magnetic_Sector : Magnetic_Object

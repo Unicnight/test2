@@ -5,7 +5,9 @@ public class Magnetic_Script : MonoBehaviour
 {
     public GameObject[] _game_objects;
     public bool show_debug = false;
-    private Magnetic_Object _magnetic_object;
+    private Magnetic_Object _magnetic_object = new Magnetic_Sector(
+            new Magnetic_Sector.Sector_Effective_Range(new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), 1, 10, 10, sync: true)
+            );
     public Magnetic_Object magnetic_object
     {
         private set { this._magnetic_object = value; }
@@ -14,9 +16,7 @@ public class Magnetic_Script : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        _magnetic_object = new Magnetic_Sector(
-            new Magnetic_Sector.Sector_Effective_Range(this.gameObject.GetComponent<Rigidbody2D>().position, new Vector2(0, 1), new Vector2(0, 1), 1, 10, 10, sync: true)
-            );
+        
         System.Collections.Generic.List<Magnetic_Object> magnetic_objects = new System.Collections.Generic.List<Magnetic_Object>();
         try
         {
@@ -28,7 +28,8 @@ public class Magnetic_Script : MonoBehaviour
         {
 
         }
-        this._magnetic_object.add_magnetic_objects(magnetic_objects.ToArray());
+        Magnetic_Object[] m = magnetic_objects.ToArray();
+        this._magnetic_object.add_magnetic_objects(magnetic_objects);
     }
 
     // Update is called once per frame

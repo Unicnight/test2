@@ -69,7 +69,7 @@ public abstract class Magnetic_Object
     }
     public abstract class Effective_Range { }
 
-
+    private List<Magnetic_Object> _magnetic_objects;
     private int _magnet_num;
     private Vector2 _force;
     private Pole _pole;
@@ -110,7 +110,7 @@ public abstract class Magnetic_Object
         {
             if (value) this.effects_delegate += calculate_effects;
             else this.effects_delegate -= calculate_effects;
-            this.effects_actived = value;
+            this._effects_actived = value;
         }
         get { return this._effects_actived; }
     }
@@ -120,9 +120,12 @@ public abstract class Magnetic_Object
             if (value) this.effective_delegate += magnetic_effect;
             else this.effective_delegate -= magnetic_effect;
             this._is_effective = value; }
-        get { return this.is_effective; }
+        get { return this._is_effective; }
     }
-    public List<Magnetic_Object> magnetic_objects { private set; get; }
+    public List<Magnetic_Object> magnetic_objects {
+        private set { this._magnetic_objects = value; }
+        get { return this._magnetic_objects; }
+    }
     public int magnet_num
     {
         private set
@@ -150,19 +153,19 @@ public abstract class Magnetic_Object
             {
                 this.magnetic_objects[n].effection(this);
             }
-            catch
+            catch (Exception ex)
             {
+                MonoBehaviour.print(ex);
                 return n;
             }
             n++;
         }
-        //this.rigidbody.AddForce(this.force);
+        this.rigidbody.AddForce(this.force);
         return -1;
     }
-    private int effection(Magnetic_Object magnetic_object)
+    protected bool effection(Magnetic_Object magnetic_object)
     {
-        effective_delegate(magnetic_object);
-        return -1;
+        return effective_delegate(magnetic_object);
     }
 
 
@@ -198,6 +201,7 @@ public abstract class Magnetic_Object
                 return 2;
             }
             effects_delegate();
+            this.rigidbody.AddForce(this.force);
         }catch
         {
             return 1;
@@ -271,6 +275,8 @@ public class Magnetic_Sector : Magnetic_Object
         private Vector2 _end_edge;
         private float _max_radius;
         private float _min_radius;
+        private float _rotation;
+
         public Vector2 centre { set; get; }
         public Vector2 start_edge
         {
@@ -312,6 +318,16 @@ public class Magnetic_Sector : Magnetic_Object
         public float resolation { set; get; }
         public bool minor_arc { set; get; }
         public bool sync { set; get; }
+        public float rotation
+        {
+            set
+            {
+                this.start_edge = Quaternion.AngleAxis(value, new Vector3(0, 0, 1)) * this.start_edge;
+                this.end_edge = Quaternion.AngleAxis(value, new Vector3(0, 0, 1)) * this.end_edge;
+                this.rotation = value;
+            }
+            get { return this.rotation; }
+        }
 
         public Sector_Effective_Range(Vector2 centre, Vector2 start_edge, Vector2 end_edge, float min_radius = 0f, float max_radius = 1f, float magnitude = 1f, float precision = 0.3927f, bool minor_arc = true,bool sync=false)
         {

@@ -332,8 +332,8 @@ public class Magnetic_Sector : Magnetic_Object
         public Sector_Effective_Range(Vector2 centre, Vector2 start_edge, Vector2 end_edge, float min_radius = 0f, float max_radius = 1f, float magnitude = 1f, float precision = 0.3927f, bool minor_arc = true,bool sync=false)
         {
             this.centre = centre;
-            this.start_edge = new Vector2 (0,1);
-            this.end_edge = new Vector2(0, 1);
+            this.start_edge = start_edge;
+            this.end_edge = end_edge;
             this.min_radius = min_radius;
             this.max_radius = max_radius;
             this.magnitude = magnitude;
@@ -401,5 +401,146 @@ public class Magnetic_Sector : Magnetic_Object
         magnetic_object.d3 = sign;
         magnetic_object.d4 = distance;
         return true;        
+    }
+}
+public class Magnetic_Box : Magnetic_Object
+{
+    public class Box_Effective_Range : Effective_Range
+    {
+        private float _max_range;
+        private float _min_range;
+
+        private Line _line;
+
+        public Line line { private set; get; }
+        public Vector2 start_point
+        {
+            set
+            {
+                this._line.start_point = value;
+            }
+            get { return this._line.start_point; }
+        }
+        public Vector2 end_point
+        {
+            set
+            {
+                this._line.end_point = value;
+            }
+            get { return this._line.end_point; }
+        }
+        public Vector2 centre
+        {
+            get { return this._line.centre; }
+        }
+        public Vector2 normal_vector
+        {
+            get { return this._line.normal_vector; }
+        }
+        public Vector2 tangent_vector
+        {
+            get { return this._line.tangent_vector; }
+        }
+        public float length
+        {
+            get { return this._line.length; }
+        }
+        public float rotation
+        {
+            set
+            {
+                this._line.rotation = value;
+            }
+            get { return this._line.rotation; }
+        }
+        public float max_range
+        {
+            set
+            {
+                if (value < this._min_range)
+                {
+                    this._max_range = this._min_range + 0.1f;
+                }
+                else this._max_range = value;
+            }
+            get { return this._max_range; }
+        }
+        public float min_range
+        {
+            set
+            {
+                if (this._min_range < 0)
+                {
+                    this._min_range = 0f;
+                }
+                else this._min_range = value;
+            }
+            get { return this._min_range; }
+        }
+        public float magnitude { set; get; }
+        public float k { set; get; }
+        public bool opposite
+        {
+            set { this._line.opposite = value; }
+            get { return this._line.opposite; }
+        }
+        public bool sync { set; get; }
+
+        public Box_Effective_Range(Vector2 start_point, Vector2 end_poinnt, float min_range = 0f, float max_range = 1f, float magnitude = 1f, bool opposite = true, bool sync = false)
+        {
+            this.start_point = start_point;
+            this.end_point = end_poinnt;
+            this.min_range = min_range;
+            this.max_range = max_range;
+            this.magnitude = magnitude;
+            this.k = this.magnitude / (1 - this.min_range * this.min_range / this.max_range / this.max_range);
+            this.opposite = opposite;
+            this.sync = sync;
+            //MonoBehaviour.print("inited1");
+        }
+        public Vector2 sync_centre(Vector2 centre)
+        {
+            if (this.sync)
+                this._line.centre = centre;
+            return this.centre;
+        }
+    }
+
+    public new Box_Effective_Range effective_range
+    {
+        private set { base._effective_range = value; }
+        get { return (Box_Effective_Range)base._effective_range; }
+    }
+
+    public Magnetic_Box(Box_Effective_Range line_effective_range, int state = 1) : base(line_effective_range, state)
+    {
+    }
+    protected override bool magnetic_effect(Magnetic_Object magnetic_object)
+    {
+        this.effective_range.sync_centre(this.rigidbody.position);
+        float distance = Line.Distance(magnetic_object.rigidbody.position, this.effective_range.line);
+        Vector2 direction = this.effective_range.line.normal_vector * this.pole * magnetic_object.pole; 
+        float angle = Vector2.Angle(direction, new Vector2(0, 1));
+        if (distance > this.effective_range.max_range)
+        {
+            return false;
+        }
+        else
+        {
+            if (!Line.Inside_Line(magnetic_object.rigidbody.position-distance* this.effective_range.line.normal_vector, this.effective_range.line))
+            {
+                return false;
+            }
+        }
+        magnetic_object.force += this.effective_range.k * (1 - distance * distance / this.effective_range.max_range / this.effective_range.max_range) * direction;
+
+
+        magnetic_object.d1 = direction;
+        magnetic_object.d2 = this.effective_range.k;
+        //magnetic_object.d3 = sign;
+        magnetic_object.d4 = distance;
+
+
+        return true;
     }
 }

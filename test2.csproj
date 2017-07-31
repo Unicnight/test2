@@ -70,8 +70,14 @@
     <Compile Include="Assets\Magnetic_Objects.cs" />
     <Compile Include="Assets\Magnetic_Script.cs" />
     <Compile Include="Assets\Move.cs" />
-    <Compile Include="Assets\Move_1.cs" />
     <Compile Include="Assets\Nature.cs" />
+    <Compile Include="Assets\Player2_Move.cs" />
+    <Compile Include="Assets\Player1_Move.cs" />
+    <Compile Include="Assets\Player_Info.cs" />
+    <Compile Include="Assets\Player_Move.cs" />
+    <Compile Include="Assets\Scene_Initialize.cs" />
+    <Compile Include="Assets\Test2.cs" />
+    <Compile Include="Assets\test.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

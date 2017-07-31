@@ -10,3 +10,10 @@ public interface IPlayer_Move
     void jump();
     //void left();
 }
+public interface IMagnetic
+{
+    Magnetic_Object magnetic_object
+    {
+        get;
+    }
+}

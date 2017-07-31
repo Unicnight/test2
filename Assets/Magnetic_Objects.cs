@@ -14,59 +14,7 @@ public abstract class Magnetic_Object
 
 
 
-    public class Pole
-    {
-        public static readonly int N = 1;
-        public static readonly int S = -1;
-
-        private int _state;
-        public int State
-        {
-            private set {
-                if (value == 1 || value == -1)
-                {
-                    this._state = value;
-                }
-                else
-                {
-                    this._state = 1;
-                }
-            }
-            get { return this._state; }
-        }
-        public Pole()
-        {
-            this.State = 1;
-        }
-        public Pole(int state)
-        {
-            this.State = state;
-        }
-        public int Reverse()
-        {
-            if (this.State == Pole.N) this.State = Pole.S;
-            if (this.State == Pole.S) this.State = Pole.N;
-            return this.State;
-        }
-        public static Pole operator !(Pole pole)
-        {
-            if (pole.State == Pole.N) pole.State = Pole.S;
-            if (pole.State == Pole.S) pole.State = Pole.N;
-            return pole;
-        }
-        public static Vector2 operator *(Pole pole, Vector2 vector)
-        {
-            return (float)pole.State * vector;
-        }
-        public static Vector2 operator *(Vector2 vector, Pole pole)
-        {
-            return vector * (float)pole.State;
-        }
-        public static int operator *(Pole pole_1, Pole pole_2)
-        {
-            return pole_1.State * pole_2.State;
-        }
-    }
+    
     public abstract class Effective_Range { }
 
     private List<Magnetic_Object> _magnetic_objects;
@@ -104,7 +52,7 @@ public abstract class Magnetic_Object
         private set { this._effective_range = value; }
         get { return this._effective_range; }
     }
-    public bool effects_actived
+    public bool effects_actived //外力影响
     {
         set
         {
@@ -114,7 +62,7 @@ public abstract class Magnetic_Object
         }
         get { return this._effects_actived; }
     }
-    public bool is_effective
+    public bool is_effective    //本身影响是否对外起作用
     {
         set {
             if (value) this.effective_delegate += magnetic_effect;
@@ -163,7 +111,7 @@ public abstract class Magnetic_Object
         this.rigidbody.AddForce(this.force);
         return -1;
     }
-    protected bool effection(Magnetic_Object magnetic_object)
+    protected bool effection(Magnetic_Object magnetic_object)   //应写一个异常
     {
         return effective_delegate(magnetic_object);
     }
@@ -201,7 +149,7 @@ public abstract class Magnetic_Object
                 return 2;
             }
             effects_delegate();
-            this.rigidbody.AddForce(this.force);
+            //this.rigidbody.AddForce(this.force);
         }catch
         {
             return 1;
@@ -219,7 +167,6 @@ public abstract class Magnetic_Object
         {
             return false;
         }
-        //MonoBehaviour.print("added");
         return true;
     }
     public bool add_magnetic_object(Magnetic_Object magnetic_object)

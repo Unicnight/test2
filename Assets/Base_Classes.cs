@@ -4,7 +4,97 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-public class Line
+//基础类
+
+    //还要修改，添加扇形基类
+
+public class Pole   //极性
+{
+    public const int N = 1;
+    public const int S = -1;
+    public const int Null = 0;
+
+    private int _state;
+    public int State
+    {
+        private set
+        {
+            if (value == 1 || value == -1)
+            {
+                this._state = value;
+            }
+            else
+            {
+                this._state = 1;
+            }
+        }
+        get { return this._state; }
+    }
+    public Pole()
+    {
+        this.State = 1;
+    }
+    public Pole(int state)
+    {
+        this.State = state;
+    }
+    public int Reverse()
+    {
+        if (this.State == Pole.N)
+        {
+            this.State = Pole.S;
+            return this.State;
+        }
+        if (this.State == Pole.S)
+        {
+            this.State = Pole.N;
+            return this.State;
+        }
+        return this.State;
+    }
+    public bool is_Null
+    {
+        set
+        {
+            if (value) this._state = 0;
+            else this._state = N;
+        }
+    }
+    public override string ToString()
+    {
+        switch (this._state)
+        {
+            case N:
+                return "N";
+            case S:
+                return "S";
+            case Null:
+                return "Null";
+        }
+        return "";
+    }
+
+    public static Pole operator !(Pole pole)
+    {
+        if (pole.State == Pole.N) pole.State = Pole.S;
+        if (pole.State == Pole.S) pole.State = Pole.N;
+        return pole;
+    }
+    public static Vector2 operator *(Pole pole, Vector2 vector)
+    {
+        return (float)pole.State * vector;
+    }
+    public static Vector2 operator *(Vector2 vector, Pole pole)
+    {
+        return vector * (float)pole.State;
+    }
+    public static int operator *(Pole pole_1, Pole pole_2)
+    {
+        return pole_1.State * pole_2.State;
+    }
+}
+
+public class Line   //线形
 {
     private Vector2 _start_point = new Vector2(0, 0);
     private Vector2 _end_point = new Vector2(0, 0);
@@ -119,3 +209,172 @@ public class Line
         else return false;
     }
 }
+
+public class Controls   //控制
+{
+    private KeyCode JUMP_KEY;
+    private KeyCode LEFT_KEY;
+    private KeyCode RIGHT_KEY;
+    private KeyCode POLE_KEY;
+
+    public bool initialized { private set; get; }
+
+    public Controls() { }
+    public void initialize()    //need modify!!
+    {
+        JUMP_KEY = KeyCode.W;
+        LEFT_KEY = KeyCode.A;
+        RIGHT_KEY = KeyCode.D;
+        POLE_KEY = KeyCode.S;
+        this.initialized = true;
+    }
+    public void initialize(KeyCode jump, KeyCode left, KeyCode right,KeyCode pole)    //need modify!!
+    {
+        JUMP_KEY = jump;
+        LEFT_KEY = left;
+        RIGHT_KEY = right;
+        POLE_KEY = pole;
+        this.initialized = true;
+    }
+    public bool Jump_Key_Down()
+    {
+        return Input.GetKeyDown(JUMP_KEY);
+    }
+    public bool Left_Key_Down()
+    {
+        return Input.GetKeyDown(LEFT_KEY);
+    }
+    public bool Right_Key_Down()
+    {
+        return Input.GetKeyDown(RIGHT_KEY);
+    }
+    public bool Pole_Key_Down()
+    {
+        return Input.GetKeyDown(POLE_KEY);
+    }
+    public bool Jump_Key()
+    {
+        return Input.GetKey(JUMP_KEY);
+    }
+    public bool Left_Key()
+    {
+        return Input.GetKey(LEFT_KEY);
+    }
+    public bool Right_Key()
+    {
+        return Input.GetKey(RIGHT_KEY);
+    }
+    public bool Pole_Key()
+    {
+        return Input.GetKey(POLE_KEY);
+    }
+    public bool Jump_Key_Up()
+    {
+        return Input.GetKeyUp(JUMP_KEY);
+    }
+    public bool Left_Key_Up()
+    {
+        return Input.GetKeyUp(LEFT_KEY);
+    }
+    public bool Right_Key_Up()
+    {
+        return Input.GetKeyUp(RIGHT_KEY);
+    }
+    public bool Pole_Key_Up()
+    {
+        return Input.GetKeyUp(POLE_KEY);
+    }
+}
+
+public class Players    //玩家类
+{
+    private Controls _control;
+
+    public Controls control
+    {
+        get { return this._control; }
+    }
+    public bool initialized { private set; get; }
+
+    public Players() {
+        this._control = new Controls();
+    }
+    public void initialize()
+    {
+        this._control.initialize();
+        this.initialized = true;
+    }
+    public void initialize(KeyCode jump,KeyCode left,KeyCode right,KeyCode pole)
+    {
+        this._control.initialize(jump,left,right,pole);
+        this.initialized = true;
+    }
+    public void sync() { }
+}
+
+public abstract class Base_Behaviour    //脚本基类，还要修改，可能还要添加一个初始化函数
+    : MonoBehaviour
+{
+    private bool _updating = false;
+    private bool _fixed_updating = false;
+
+    public bool updating
+    {
+        set
+        {
+            if (value != this._updating)
+            {
+                if (value) update_delegate += custom_update;
+                else update_delegate -= custom_update;
+                this._updating = value;
+            }
+        }
+        get { return this._updating; }
+    }
+    public bool fixed_updating
+    {
+        set
+        {
+            if (value != this._fixed_updating)
+            {
+                if (value) this.fixed_update_delegate += this.custom_fixed_update;
+                else this.fixed_update_delegate -= this.custom_fixed_update;
+                this._fixed_updating = value;
+            }
+        }
+        get { return this._fixed_updating; }
+    }
+
+    protected delegate void Update_Delegate();//定义委托
+    protected  delegate void Fixed_Update_Delegate();//定义委托
+    protected Update_Delegate update_delegate;
+    protected Update_Delegate fixed_update_delegate;
+
+    private void Update()
+    {
+        try
+        {
+            this.update_delegate();
+        }
+        catch
+        {
+
+        }
+    }
+    private void FixedUpdate()
+    {
+        try
+        {
+            this.fixed_update_delegate();
+        }
+        catch
+        {
+
+        }
+    }
+
+    public abstract bool initialize();
+    protected abstract void custom_update();
+    protected abstract void custom_fixed_update();
+}
+

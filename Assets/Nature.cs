@@ -24,7 +24,7 @@ public class Nature : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
 		distance = Vector2.Distance (Rigidbody_1.position, Rigidbody_2.position);
-		b1 = ball_1.GetComponent<Move_1> ().b;
+		//b1 = ball_1.GetComponent<Move_1> ().b;
 		b2 = ball_2.GetComponent<Move> ().b;
 
 		if (distance > 1) {

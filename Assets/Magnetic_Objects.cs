@@ -223,6 +223,7 @@ public class Magnetic_Sector : Magnetic_Object
         private float _max_radius;
         private float _min_radius;
         private float _rotation;
+        private float _magnitude;
 
         public Vector2 centre { set; get; }
         public Vector2 start_edge
@@ -259,8 +260,16 @@ public class Magnetic_Sector : Magnetic_Object
             }
             get { return this._min_radius; }
         }
-        public float magnitude { set; get; }
-        public float k { set; get; }
+        public float magnitude
+        {
+            set
+            {
+                this.k = this.magnitude / (1 - this.min_radius * this.min_radius / this.max_radius / this.max_radius);
+                this._magnitude = value;
+            }
+            get { return this._magnitude; }
+        }
+        public float k { private set; get; }
         public float precision { set; get; }
         public float resolation { set; get; }
         public bool minor_arc { set; get; }
@@ -271,9 +280,9 @@ public class Magnetic_Sector : Magnetic_Object
             {
                 this.start_edge = Quaternion.AngleAxis(value, new Vector3(0, 0, 1)) * this.start_edge;
                 this.end_edge = Quaternion.AngleAxis(value, new Vector3(0, 0, 1)) * this.end_edge;
-                this.rotation = value;
+                this._rotation = value;
             }
-            get { return this.rotation; }
+            get { return this._rotation; }
         }
 
         public Sector_Effective_Range(Vector2 centre, Vector2 start_edge, Vector2 end_edge, float min_radius = 0f, float max_radius = 1f, float magnitude = 1f, float precision = 0.3927f, bool minor_arc = true,bool sync=false)
@@ -284,7 +293,7 @@ public class Magnetic_Sector : Magnetic_Object
             this.min_radius = min_radius;
             this.max_radius = max_radius;
             this.magnitude = magnitude;
-            this.k = this.magnitude / (1 - this.min_radius * this.min_radius / this.max_radius / this.max_radius);
+            
             this.precision = precision;
             this.resolation = Mathf.Deg2Rad / precision;
             if (start_edge == end_edge)

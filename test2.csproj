@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Base_Classes.cs" />
+    <Compile Include="Assets\Camera_Move.cs" />
     <Compile Include="Assets\Interfaces.cs" />
     <Compile Include="Assets\Magnetic_Objects.cs" />
     <Compile Include="Assets\Magnetic_Script.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Assets\Player_Info.cs" />
     <Compile Include="Assets\Player_Move.cs" />
     <Compile Include="Assets\Scene_Initialize.cs" />
+    <Compile Include="Assets\Stars.cs" />
     <Compile Include="Assets\Test2.cs" />
     <Compile Include="Assets\test.cs" />
   </ItemGroup>

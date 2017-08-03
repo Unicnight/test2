@@ -19,8 +19,8 @@ public class Player_Move
     private Players _player;
     
     private float _jump_time=0.1f;
-    private Vector2 _jump_force = new Vector2(0, 100);
-    private Vector2 _walk_force = new Vector2(50, 0);
+    private float _jump_force = 100;
+    private float _walk_force = 10;
     private float _stop_force = 20f;
     private float _max_velocity = 4f;
 
@@ -30,12 +30,12 @@ public class Player_Move
         get { return this._jump_time; }
     }
     public float jumping_timer { set; get; }
-    public Vector2 jump_force
+    public float jump_force
     {
         set { this._jump_force = value; }
         get { return this._jump_force; }
     }
-    public Vector2 walk_force
+    public float walk_force
     {
         set { this._walk_force = value; }
         get { return this._walk_force; }
@@ -72,14 +72,14 @@ public class Player_Move
     {
         if (this._player.control.Left_Key())
         {
-            walk(new Vector2(-10, 0));
+            walk(this.walk_force * new Vector2(-1, 0));
         }
     }
     private void move_right()
     {
         if (this._player.control.Right_Key())
         {
-            walk(new Vector2(10, 0));
+            walk(this.walk_force * new Vector2(1, 0));
         }
     }
     private void jump()
@@ -107,7 +107,7 @@ public class Player_Move
             {
                 if (this.jumping_timer < this._jump_time)
                 {
-                    this.force += this.jump_force;
+                    this.force += this.jump_force * new Vector2(0, 1);
                     this.jumping_timer += Time.deltaTime;
                     this._jumping = true;
                 }
